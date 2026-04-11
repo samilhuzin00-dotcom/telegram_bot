@@ -6,18 +6,13 @@ from aiogram.dispatcher import filters
 from aiogram.utils import executor
 from aiogram.dispatcher import State, StatesGroup
 
-API_TOKEN = 'YOUR_BOT_TOKEN_HERE'  # Замените на свой токен
-
-# Создаем бота и диспетчер
 bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
-# Определяем состояния
 class GameStates(StatesGroup):
     waiting_for_choice = State()
 
-# Возможные варианты
 choices = ['камень', 'ножницы', 'бумага']
 
 @dp.message_handler(commands=['start'])
