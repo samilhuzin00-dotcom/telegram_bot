@@ -1,0 +1,63 @@
+import random
+from aiogram import Bot, Dispatcher, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher import filters
+from aiogram.utils import executor
+from aiogram.dispatcher import State, StatesGroup
+
+API_TOKEN = 'YOUR_BOT_TOKEN_HERE'  # Замените на свой токен
+
+# Создаем бота и диспетчер
+bot = Bot(token=API_TOKEN)
+storage = MemoryStorage()
+dp = Dispatcher(bot, storage=storage)
+
+# Определяем состояния
+class GameStates(StatesGroup):
+    waiting_for_choice = State()
+
+# Возможные варианты
+choices = ['камень', 'ножницы', 'бумага']
+
+@dp.message_handler(commands=['start'])
+async def cmd_start(message: types.Message):
+    await message.reply("Привет! Давай сыграем в 'Камень, ножницы, бумага'. Напиши 'играть', чтобы начать.")
+
+@dp.message_handler(commands=['help'])
+async def cmd_help(message: types.Message):
+    await message.reply("Напиши 'играть', чтобы начать игру.")
+
+@dp.message_handler(lambda message: message.text.lower() == 'играть')
+async def start_game(message: types.Message):
+    await GameStates.waiting_for_choice.set()
+    await message.reply("Выбери: камень, ножницы или бумага.")
+
+@dp.message_handler(state=GameStates.waiting_for_choice)
+async def make_choice(message: types.Message, state: FSMContext):
+    user_choice = message.text.lower()
+    
+    if user_choice not in choices:
+        await message.reply("Пожалуйста, выбери: камень, ножницы или бумага.")
+        return
+
+    bot_choice = random.choice(choices)
+    await message.reply(f"Я выбрал: {bot_choice}.\n")
+
+    if user_choice == bot_choice:
+        await message.reply("Ничья!")
+    elif (user_choice == 'камень' and bot_choice == 'ножницы') or \
+         (user_choice == 'ножницы' and bot_choice == 'бумага') or \
+         (user_choice == 'бумага' and bot_choice == 'камень'):
+        await message.reply("Ты выиграл!")
+    else:
+        await message.reply("Я выиграл!")
+
+    await state.finish()
+
+@dp.message_handler(lambda message: message.text.lower() not in ['играть', 'камень', 'ножницы', 'бумага'], state='*')
+async def invalid_input(message: types.Message):
+    await message.reply("Пожалуйста, напиши 'играть', чтобы начать игру.")
+
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
