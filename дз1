@@ -1,0 +1,28 @@
+import string
+
+def process_message(message):
+    
+    Args:
+        message (str): Исходное сообщение для обработки.
+
+    Returns:
+        str: Обработанное сообщение.
+    """
+    has_punctuation = any(char in string.punctuation for char in message)
+    has_spaces = ' ' in message
+
+    if not has_punctuation and not has_spaces
+        processed_part = ""
+        for i in range(0, len(message), 3):
+            processed_part += message[i].lower()
+        return processed_part
+    elif not has_punctuation and has_spaces:
+      
+        words = message.split()
+        processed_words = [word.capitalize() for word in words]
+        return " ".join(processed_words)
+    else:
+       
+        half_length = len(message) // 2
+        return message[:half_length].upper()
+
