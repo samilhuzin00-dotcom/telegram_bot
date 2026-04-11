@@ -1,0 +1,57 @@
+import random
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Привет! Давай сыграем в "Угадай число"! Я загадаю число от 1 до 10. Попробуй угадать его! Напиши /guess, чтобы начать.')
+
+def guess(update: Update, context: CallbackContext) -> None:
+    context.user_data['number_to_guess'] = random.randint(1, 100)
+    context.user_data['attempts'] = 0
+    update.message.reply_text('Я загадал число от 1 до 100. Угадай его!')
+
+def handle_guess(update: Update, context: CallbackContext) -> None:
+    if 'number_to_guess' not in context.user_data:
+        update.message.reply_text('Сначала начни игру с помощью команды /guess.')
+        return
+
+    try:
+        user_guess = int(update.message.text)
+        context.user_data['attempts'] += 1
+        number_to_guess = context.user_data['number_to_guess']
+
+        if user_guess < number_to_guess:
+            update.message.reply_text('Слишком низко! Попробуй еще раз.')
+        elif user_guess > number_to_guess:
+            update.message.reply_text('Слишком высоко! Попробуй еще раз.')
+        else:
+            attempts = context.user_data['attempts']
+            update.message.reply_text(f'Поздравляю! Ты угадал число {number_to_guess} за {attempts} попыток! Напиши /guess, чтобы сыграть снова.')
+            del context.user_data['number_to_guess']  # Удаляем число после завершения игры
+            del context.user_data['attempts']  # Удаляем попытки после завершения игры
+    except ValueError:
+        update.message.reply_text('Пожалуйста, введи число.')
+
+def error(update: Update, context: CallbackContext) -> None:
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
+
+def main() -> None:
+    updater = Updater("YOUR_API_TOKEN")
+
+    dispatcher = updater.dispatcher
+
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("guess", guess))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_guess))
+    dispatcher.add_error_handler(error)
+
+    updater.start_polling()
+
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
