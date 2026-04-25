@@ -63,8 +63,6 @@ async def handle_answer(
         await update.message.reply_text(f"Неправильно. Правильный ответ: {correct_option_number}. {correct_answer}")
 
 def main():
-    # Вставьте сюда ваш токен
-    TOKEN = 'ВАШ_ТОКЕН_ТУТ'
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
