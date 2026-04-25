@@ -1,0 +1,41 @@
+from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, InlineQueryHandler
+import uuid
+
+async def inline_query(update, context):
+    query = update.inline_query.query
+
+    pizzas = [
+        {"name": "Маргарита", "price": "300 руб."},
+        {"name": "Пепперони", "price": "400 руб."},
+        {"name": "Гавайская", "price": "350 руб."},
+        {"name": "Вегетарианская", "price": "320 руб."}
+    ]
+
+    results = []
+
+    for pizza in pizzas:
+        unique_id = str(uuid.uuid4())
+
+        message_text = f"Вы выбрали пиццу: {pizza['name']}\nЦена: {pizza['price']}"
+
+        results.append(
+            InlineQueryResultArticle(
+                id=unique_id,
+                title=pizza['name'],
+                input_message_content=InputTextMessageContent(message_text),
+                description=pizza['price']
+            )
+        )
+
+    await update.inline_query.answer(results)
+
+def main():'
+    app = ApplicationBuilder().token(TOKEN).build()
+
+    app.add_handler(InlineQueryHandler(inline_query))
+
+    app.run_polling()
+
+if __name__ == '__main__':
+    main()
